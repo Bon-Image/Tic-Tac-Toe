@@ -45,7 +45,7 @@
 
 
 // Purpose: Create Players for the game
-// Properties and Methods: name,getMark, setMark ,increaseScore, getScore
+// Properties and Methods: name,getMark, setMark ,increaseScore, getScore, resetScore 
 // Example: const playerOne = createPlayer("Alex"),playerOne.name, playerOne.increaseScore(), etc. 
 
 
@@ -53,7 +53,7 @@
 
 
 // Purose: Controls the flow of the game, who is the current player and how many rounds has been played, the score board
-// Properties and Methods: getRound, getPlayes, setPlayers ,increaseRound, getCurrentPlayer, setCurrentPlayer
+// Properties and Methods: getRound, getPlayers, setPlayers, increaseRound, getCurrentPlayer, setCurrentPlayer, getGameIsOn, setGameIsOn
 // Examples: const Game = Wrapped inside IIFE, Game.currentPlayer() etc. 
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -110,9 +110,13 @@ function createPlayer(name) {
     let score = 0;
     const increaseScore = () => score++;
     const getScore = () => score;
+    const resetScore = () => {
 
+        score = 0;
 
-    return { name, getMark, setMark, increaseScore, getScore };
+    }
+
+    return { name, getMark, setMark, increaseScore, getScore, resetScore };
 
 };
 
@@ -131,6 +135,14 @@ const Game = (function () {
 
     }
 
+    let gameIsOn = false;
+    const getGameIsOn = () => gameIsOn;
+    const setGameIsOn = () => {
+
+        gameIsOn = !gameIsOn;
+
+    };
+
 
     let round = 1;
     const getRound = () => round;
@@ -143,12 +155,44 @@ const Game = (function () {
         currentPlayer = player;
 
     }
-    return { getRound, getPlayers, setPlayers, increaseRound, getCurrentPlayer, setCurrentPlayer };
+    return { getRound, getPlayers, setPlayers, increaseRound, getCurrentPlayer, setCurrentPlayer, getGameIsOn, setGameIsOn };
 })()
 
-//-------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
 //--------------------------------------------------- Game Flow ------------------------------------------------------
-//-------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
+
+
+// Purpose: Creates players 
+// void -> ArrayOfPlayer
+
+function initializePlayers() {
+
+    // Read the players' name from the input form, pass the names to create Players. 
+    const player1 = createPlayer(document.getElementById("player1").value);
+    const player2 = createPlayer(document.getElementById("player2").value);
+
+    if (player1.name && player2.name) {
+
+        if (!Game.getGameIsOn()) {
+
+            initializeGame([player1, player2]);
+            Game.setGameIsOn();
+
+        } else {
+
+            alert("Please refresh the page to start a new game.");
+
+        };
+
+
+    } else {
+
+        alert("Please choose a name for player!");
+
+    };
+
+};
 
 
 // Purpose: Initialize the game
@@ -160,8 +204,10 @@ function initializeGame(players) {
     Game.setPlayers(players);
     Game.setCurrentPlayer(players[0]);
     setPlayerMark(players);
+    renderGameScores(players[0].getScore(), players[1].getScore());
+    renderGrid();
 
-}
+};
 
 
 // Purpose: Set player's mark
@@ -173,42 +219,37 @@ function setPlayerMark(players) {
     players[0].setMark("X");
     players[1].setMark("O");
 
-}
+};
 
 
 // Purpose: Records the player's choice. 
 // Signature: Integer -> !!!
 // play
 
-function play(cellID) {
+function play(cellID, cell = "") {
+
+    Gameboard.setCell(cellID, Game.getCurrentPlayer().getMark());
+    renderCell(cell);
+
+    if (hasPlayerWon(Game.getCurrentPlayer().getMark())) {
+
+        updateGameStatus(Game.getCurrentPlayer());
 
 
-    if (cellNotOccupied(cellID)) {
 
-        Gameboard.setCell(cellID, Game.getCurrentPlayer().getMark());
+    } else {
 
-        console.log(Gameboard.gameboard);
+        if (gameboardIsFull()) {
 
-        if (hasPlayerWon(Game.getCurrentPlayer().getMark())) {
-
-            console.log(`${Game.getCurrentPlayer().name} has won the game!`);
-            updateGameStatus(Game.getCurrentPlayer());
-
-        } else {
-
-            if (gameboardIsFull()) {
-
-                console.log("This is a tie!");
-
-            };
+            showBanner();
+            Gameboard.resetBoard();
+            removeGrid();
 
         };
 
-        switchPlayer();
-
     };
 
-
+    switchPlayer();
 
 };
 
@@ -216,11 +257,11 @@ function play(cellID) {
 // Signature: Integer -> Boolean 
 // Examples: cellNotOccupied(2) -> True / False
 
-function cellNotOccupied(cellID) {
+function cellIsNotOccupied(cellID) {
 
     return (Gameboard.getCell(cellID) === null);
 
-}
+};
 
 
 // Purpose: Check if the board is full
@@ -238,7 +279,6 @@ function gameboardIsFull() {
         });
 
     });
-
 
 };
 
@@ -262,7 +302,7 @@ function switchPlayer() {
 
     }
 
-}
+};
 
 
 // Purpose: Check for the winning combination 
@@ -295,30 +335,213 @@ function hasPlayerWon(mark) {
 
 // Purpose: Updates the scores of the winning player and the winner of each three rounds in a row
 // Signature: Player -> void 
-// Examples: !!!
 
 function updateGameStatus(player) {
 
     player.increaseScore();
+    renderGameScores();
+
 
     if (player.getScore() === 3) {
 
-        console.log(`${Game.getCurrentPlayer().name} has won three times in a row!`);
+        showBanner(Game.getCurrentPlayer(), true);
 
     } else {
 
-        console.log("Reset");
+        showBanner(Game.getCurrentPlayer());
         Gameboard.resetBoard();
+        removeGrid();
 
     };
 
 };
 
 
-// Purpose: Check for the gameover
-// Signature: void -> !!!
-// Examples: !!!
+// Purpose: Displays grid and scores 
+// void -> void 
 
-function gameOver() {
+function renderGameScores() {
 
+    const players = Game.getPlayers();
+
+    player1ScoreBoard.textContent = ` ${players[0].name} : ${players[0].getScore()}`;
+    player2ScoreBoard.textContent = ` ${players[1].name} : ${players[1].getScore()}`;
+
+};
+
+
+// purpose: Render grids 
+// Signature: void -> void 
+
+function renderGrid() {
+
+    for (let i = 0; i < 9; i++) {
+
+        const cellIDs = [
+            "[0, 0]", "[0, 1]", "[0, 2]",
+            "[1, 0]", "[1, 1]", "[1, 2]",
+            "[2, 0]", "[2, 1]", "[2, 2]"
+        ];
+
+        let cellDiv = createElement("div", ["cell"], cellIDs[i]);
+
+        gridContainer.appendChild(cellDiv);
+
+    };
+
+};
+
+
+// Purpose: Render a new mark into the secected cell
+// Signature: Array -> void 
+
+function renderCell(cell) {
+
+    cell.textContent = Game.getCurrentPlayer().getMark();
+
+};
+
+
+// Purpose: Show game's results after each round ends. 
+// Signature: Player Boolean -> void 
+
+function showBanner(player = null, gameover = false) {
+
+    const banner = createElement("dialog", ["banner"]);
+    const bannerButton = createElement("button", ["banner-button"]);
+
+    if (player !== null && !gameover) {
+
+        bannerButton.textContent = "Play Again";
+        banner.textContent = `${player.name} has won!`;
+
+    } else if (player !== null && gameover) {
+
+        bannerButton.textContent = "Reset";
+        banner.textContent = `${player.name} Has Won 3 Times!`;
+        resetGame();
+
+    } else {
+
+        bannerButton.textContent = "Play Again";
+        bannerButton.textContent = "Tie!";
+
+    };
+
+    banner.appendChild(bannerButton);
+    body.appendChild(banner);
+
+    banner.showModal();
+
+    bannerButton.addEventListener("click", () => {
+        if (gameover) {
+
+            location.reload();
+
+        } else {
+
+            banner.close();
+            banner.remove();
+
+        }
+
+    });
+
+};
+
+
+// Purpose; Resets the game 
+// void -> void 
+
+function resetGame() {
+
+    removeGrid();
+    const players = Game.getPlayers();
+    players[0].resetScore();
+    players[1].resetScore();
+    renderGameScores();
+
+};
+
+
+//--------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------- DOM Manipulation  -----------------------------------------
+//--------------------------------------------------------------------------------------------------------------------
+
+
+// import from HTML 
+const body = document.querySelector("body");
+const mainContentArea = document.getElementsByClassName("main-content-area")[0];
+const gridContainer = document.getElementsByClassName("grid-container")[0];
+const start = document.getElementById("submit");
+const form = document.getElementById("player-form");
+
+// Create new elements
+const scoreContainer = createElement("div", ["scores"]);
+const player1ScoreBoard = createElement("div", ["score-board"], "player1Score");
+const player2ScoreBoard = createElement("div", ["score-board"], "player2Score");
+
+scoreContainer.appendChild(player1ScoreBoard);
+scoreContainer.appendChild(player2ScoreBoard);
+mainContentArea.appendChild(scoreContainer);
+
+
+//--------------------------------------------------- Event Handling ------------------------------------------------------
+
+
+start.addEventListener("click", (event) => {
+
+    event.preventDefault();
+    initializePlayers();
+    form.reset();
+
+});
+
+
+
+gridContainer.addEventListener("click", (event) => {
+
+    const cellID = JSON.parse(event.target.id);
+    if (cellIsNotOccupied(cellID)) {
+
+        play(cellID, event.target);
+
+    };
 }
+
+);
+
+
+//--------------------------------------------------- DOM Functions ------------------------------------------------------
+
+
+// Purpose: Creates elements 
+// String ArrayOfString String-> Element 
+// createElement("div", ["one", "container", "scores"]) -> <div class = " one container scores"></div>
+// First argument is the element type we want to create, div, p, etc., the seocnd is the class list and the thirs ID name
+
+
+function createElement(element, classList, id = "") {
+
+    const tag = document.createElement(element);
+    tag.classList.add(classList);
+    tag.id = id;
+
+    return tag;
+
+};
+
+
+// Purpose: Removes the grid after gameover
+// void -> void 
+
+function removeGrid() {
+
+    const cells = [...document.getElementsByClassName("cell")];
+    cells.forEach(cell => {
+
+        cell.textContent = "";
+
+    });
+
+};

@@ -1,0 +1,161 @@
+/*--------------------------------------------------- General ----------------------------------------------------- */
+
+
+* {
+
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+body {
+
+    background-color: white;
+
+}
+
+/*--------------------------------------------------- Header ------------------------------------------------------------ */
+
+header {
+
+    min-width: 600px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin: 5rem;
+    
+}
+
+form,
+.players {
+
+    min-width: 600px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 2%;
+
+}
+
+
+
+#submit {
+
+    width: 120px;
+    height: 35px;
+    background-color: #673AB7;
+    color: white;
+    border-radius: 10px;
+    
+}
+
+
+
+
+/*--------------------------------------------------- Main Content Area -------------------------------------------------- */
+
+
+.main-content-area {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 5rem;
+    flex-shrink: 0;
+
+}
+
+
+/*--------------------------------------------------- Gameboard -------------------------------------------------- */
+
+
+
+.grid-container {
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    margin: 10% 15%;
+
+}
+
+
+.cell {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid black;
+    min-height: 200px;
+    min-width: 200px;
+    border-radius: 2px;
+
+}
+
+
+/* --------------------------------------------------- Scores -------------------------------------------------- */
+
+
+.scores {
+
+    display:grid; 
+    grid-template-columns: repeat(2, 1fr);
+    margin: 0;
+    min-width: 600px;
+    font-size: 5vw;
+
+}
+
+
+.score-board {
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 300px;
+    height: 25px;
+    
+}
+
+/*--------------------------------------------------- Dialog -------------------------------------------------- */
+
+
+dialog {
+
+    display: flex; 
+    flex-direction:column;
+    justify-content: space-around;
+    align-items: center;
+
+    height: 25vh;
+    width: 25vw;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    border: none;
+    border-radius: 5%;
+    transform: translate(-50%, -50%);
+    font-size: 24pt;
+
+    background-color: #B39DDB;
+    color: white;
+
+}
+
+.banner-button {
+
+    height: 25px;
+    width: 25%; 
+    background-color: #7E57C2;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    
+}
+
+/* ---------------------------------------------------- cells  -------------------------------------------------- */
+
+
